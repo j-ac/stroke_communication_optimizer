@@ -1,4 +1,5 @@
 from typing import List
+import itertools
 
 letter_freqs = {
     'A': 8.2    /100,
@@ -35,14 +36,15 @@ alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 def calculate_cost(divisions: List[int], verbose: bool = False) -> int:
     idx = 0
     cost = 0 
+    prev_cost = 0
 
     while idx < len(divisions) -1:
         section = alpha[divisions[idx]:divisions[idx+1]]
-
         for pos, letter in enumerate(section):
             cost += letter_freqs[letter] * pos
 
-        if verbose: print("{0:9}".format(section) + "\t" + "{0:4.4f}".format(cost))
+        if verbose: print("{0:9}".format(section) + "\t" + "{0:4.4f}".format(cost - prev_cost))
+        prev_cost = cost
         idx += 1
 
     return cost
@@ -54,54 +56,25 @@ def print_divs(divisions: List[int]):
         print(section)
         idx += 1
 
-def hunt_for_lowest_cost_8(verbose: bool = False):
+def hunt_for_lowest_cost(num_groups: int, verbose: bool = False):
     best_divs = []
     best_cost = 999999999999999
-    for div1 in range(1, len(alpha) -6):
-        for div2 in range(div1+1, len(alpha) -5):
-            for div3 in range(div2+1, len(alpha) -4):
-                for div4 in range(div3+1, len(alpha) -3):
-                    for div5 in range(div4+1, len(alpha) -2):
-                        for div6 in range(div5+1, len(alpha) -1):
-                            for div7 in range(div6+1, len(alpha)):
-                                divs = [0, div1, div2, div3, div4, div5, div6, div7, len(alpha)]
+    for comb in itertools.combinations(range(1, 26 + 1), num_groups -1): # For n groups you need n-1 dividers eg 2 dividers:   ABC|DEF|GHI
+        divs = list(comb)
+        divs.insert(0,0)
+        divs.append(len(alpha))
 
-                                this_cost = calculate_cost(divs)
-                                if this_cost < best_cost:
-                                    best_cost = this_cost
-                                    best_divs = divs
-                                    if verbose: 
-                                        print("new best: " + str(best_cost))
-                                        print_divs(divs)
-    
-    print("\n==== BEST OVERALL ====\tn=8")
+        this_cost = calculate_cost(divs)
+        if this_cost < best_cost:
+            best_cost = this_cost
+            best_divs = divs
+
+            if verbose: 
+                print("new best: " + str(best_cost))
+                print_divs(divs)
+
+    print("\n==== BEST OVERALL ====\tn=" + str(num_groups))
     calculate_cost(best_divs, verbose=True)
-
-
-def hunt_for_lowest_cost_7(verbose: bool = False):
-    best_divs = []
-    best_cost = 999999999999999
-    for div1 in range(1, len(alpha) - 5):
-        for div2 in range(div1+1, len(alpha) -4):
-            for div3 in range(div2+1, len(alpha) -3):
-                for div4 in range(div3+1, len(alpha) -2):
-                    for div5 in range(div4+1, len(alpha) -1):
-                        for div6 in range(div5+1, len(alpha)):
-                                divs = [0, div1, div2, div3, div4, div5, div6, len(alpha)]
-                                
-                                this_cost = calculate_cost(divs)
-                                if this_cost < best_cost:
-                                    best_cost = this_cost
-                                    best_divs = divs
-
-                                    if verbose: 
-                                        print("new best: " + str(best_cost))
-                                        print_divs(divs)
-
-    print("\n==== BEST OVERALL ====\tn=7")
-    calculate_cost(best_divs, verbose=True)
-
-
 
 def hunt_for_lowest_cost_6(verbose:bool = False):
     best_divs = []
@@ -126,4 +99,4 @@ def hunt_for_lowest_cost_6(verbose:bool = False):
     calculate_cost(best_divs, verbose=True)
 
 
-hunt_for_lowest_cost_6()
+hunt_for_lowest_cost(8, verbose=False)
